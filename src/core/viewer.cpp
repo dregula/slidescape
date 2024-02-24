@@ -1618,6 +1618,7 @@ void viewer_update_and_render(app_state_t *app_state, input_t *input, i32 client
 				} else {
 					scene->can_export_region = false;
 				}
+            //TODO: 2023-02-10 draft for IMAGE_BACKEND_ISYNTAX
 			} else {
 				scene->can_export_region = false;
 			}

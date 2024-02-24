@@ -1622,8 +1622,8 @@ void draw_annotations_window(app_state_t* app_state, input_t* input) {
             ImGui::TextUnformatted("Annotation filename: (none)\n");
         }
 
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, (ImVec2){});
-        ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4) {});
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2());
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4());
         if (ImGui::SmallButton("Annotation directory: ")) {
             open_file_dialog(app_state, OPEN_FILE_DIALOG_CHOOSE_DIRECTORY, 0);
         }

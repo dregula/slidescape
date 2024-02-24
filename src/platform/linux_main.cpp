@@ -577,14 +577,20 @@ int main(int argc, const char** argv)
 #if LINUX
 
 	// Query default monitor resolution
-	float ddpi, hdpi, vdpi;
-	if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-		fprintf(stderr, "Failed to obtain DPI information for display 0: %s\n", SDL_GetError());
-		exit(1);
-	}
+//TRY: 2024-02-20 set dpi_scaling=1
+    //TODO: 2024-02-20 revise to use new SDL recommendations:
+    // It is almost always better to use SDL_GetWindowSize() to find the window size,
+    // which might be in logical points instead of pixels, and then SDL_GL_GetDrawableSize()
+    // , SDL_Vulkan_GetDrawableSize(), SDL_Metal_GetDrawableSize(), or SDL_GetRendererOutputSize()
+    // , and compare the two values to get an actual scaling value between the two.
+//	float ddpi, hdpi, vdpi;
+//	if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
+//		fprintf(stderr, "Failed to obtain DPI information for display 0: %s\n", SDL_GetError());
+//		exit(1);
+//	}
 	// TODO: which is the correct 'base' dpi? Is it 72 for macOS, 96 for Linux?
-	float dpi_scaling = ddpi / 72.0f;
-
+//	float dpi_scaling = ddpi / 72.0f;
+float dpi_scaling = 1.0;
 	// NOTE: SDL_GetDisplayDPI() may return bogus results (ex. on Ubuntu 20.04 / SDL 2.0.10)
 	// Let's do a sanity check and try to do a fallback method in case the DPI is suspicious
 	if (dpi_scaling < 0.5f || dpi_scaling > 4.0f) {

@@ -16,3 +16,4 @@ openslide/
 *.json
 *.xml
 *.orig
+/samples
