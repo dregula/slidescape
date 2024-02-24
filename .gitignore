@@ -17,3 +17,5 @@ openslide/
 *.xml
 *.orig
 /samples
+/.vs/slidescape/v17
+/.vs
