@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(slidescape)
 
 set(CMAKE_C_STANDARD 11)
@@ -231,6 +231,7 @@ set(VIEWER_SOURCE_FILES
         third_party/yxml.c
         third_party/minfft.c
         third_party/ltalloc.cc
+        third_party/http_parser.c
         utils/stringutils.c
         utils/mathutils.c
         utils/memrw.c
@@ -273,8 +274,8 @@ if (WIN32)
     add_executable(slidescape         ${VIEWER_SOURCE_FILES} ${LIBRARY_SOURCE_FILES} resources/icon/icon.rc)
     add_executable(slidescape_console ${VIEWER_SOURCE_FILES} ${LIBRARY_SOURCE_FILES} resources/icon/icon.rc)
 
-    target_link_libraries(slidescape         user32 gdi32 winmm imm32 dwmapi ws2_32 psapi shlwapi)
-    target_link_libraries(slidescape_console user32 gdi32 winmm imm32 dwmapi ws2_32 psapi shlwapi)
+    target_link_libraries(slidescape         user32 gdi32 winmm imm32 dwmapi ws2_32 psapi shlwapi crypt32)
+    target_link_libraries(slidescape_console user32 gdi32 winmm imm32 dwmapi ws2_32 psapi shlwapi crypt32)
 
     # Hide the console window on (non-console) release builds
     target_link_options(slidescape PRIVATE "$<$<NOT:$<CONFIG:Debug>>:-mwindows>")
@@ -287,7 +288,7 @@ elseif(APPLE)
     set_source_files_properties(${MACOSX_BUNDLE_ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     add_executable(slidescape MACOSX_BUNDLE ${VIEWER_SOURCE_FILES} ${LIBRARY_SOURCE_FILES} ${MACOSX_BUNDLE_ICON_FILE})
     set_target_properties(slidescape PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/src/Info.plist")
-    target_link_libraries(slidescape "-framework Cocoa" "-framework Quartz" "-framework OpenGL" "-framework ApplicationServices")
+    target_link_libraries(slidescape "-framework Cocoa" "-framework Quartz" "-framework OpenGL" "-framework ApplicationServices" "-framework Security")
     target_link_libraries(slidescape ${SDL2_LIBRARIES})
     set_target_properties(slidescape PROPERTIES OUTPUT_NAME Slidescape)
 

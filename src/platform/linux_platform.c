@@ -1,7 +1,7 @@
 /*
   BSD 2-Clause License
 
-  Copyright (c) 2019-2023, Pieter Valkema
+  Copyright (c) 2019-2024, Pieter Valkema
 
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
@@ -38,15 +38,22 @@ u8* platform_alloc(size_t size) {
     u8* result = (u8*) malloc(size);
     if (!result) {
         printf("Error: memory allocation failed!\n");
-        panic();
+        fatal_error();
     }
     return result;
 }
 
 const char* get_default_save_directory() {
+    static char default_save_dir[256];
+    static bool first_time = true;
 	struct passwd* pwd = getpwuid(getuid());
-	if (pwd)
-		return pwd->pw_dir;
-	else
-		return "";
+	if (pwd) {
+        if (first_time) {
+            snprintf(default_save_dir, sizeof(default_save_dir)-1, "%s/", pwd->pw_dir);
+            first_time = false;
+        }
+        return default_save_dir;
+    } else {
+        return "";
+    }
 };
