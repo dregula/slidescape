@@ -312,7 +312,7 @@ static void isyntax_do_first_load(isyntax_streamer_t* streamer) {
 	}
 
 	console_print("   iSyntax: loading the first %d tiles took %g seconds\n", tiles_loaded, get_seconds_elapsed(start_first_load, get_clock()));
-//	console_print("   total RGB transform time: %g seconds\n", total_rgb_transform_time);
+	console_print("   total RGB transform time: %g seconds\n", total_rgb_transform_time);
 
 	i32 blocks_freed = 0;
 	for (i32 i = 0; i < levels_in_chunk; ++i) {

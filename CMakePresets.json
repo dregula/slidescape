@@ -14,7 +14,7 @@
 					"rhs": "Linux"
 				},
 				"vendor": {
-					"microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+					"/usr/bin/cmake": {
 						"sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
 					}
 				}

@@ -105,6 +105,7 @@ SOFTWARE.
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 
 #pragma endregion
 
