@@ -1,5 +1,4 @@
 cmake-build*/
-.idea/
 release/
 build/
 *.exe
@@ -14,8 +13,6 @@ openslide/
 *.isyntax
 *.png
 *.json
-*.xml
 *.orig
 /samples
-/.vs/slidescape/v17
 /.vs
