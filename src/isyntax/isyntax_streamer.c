@@ -151,7 +151,7 @@ static void isyntax_do_first_load(isyntax_streamer_t* streamer) {
 				if (!tile->exists) continue;
 				isyntax_codeblock_t* top_chunk_codeblock = wsi->codeblocks + tile->codeblock_chunk_index;
 				u64 offset0 = top_chunk_codeblock->block_data_offset;
-//				console_print("loading chunk %d\n", tile->codeblock_chunk_index);
+				console_print("loading chunk %d\n", tile->codeblock_chunk_index);
 
 				isyntax_codeblock_t* last_codeblock = wsi->codeblocks + tile->codeblock_chunk_index + chunk_codeblock_count - 1;
 				u64 offset1 = last_codeblock->block_data_offset + last_codeblock->block_size;
@@ -312,7 +312,7 @@ static void isyntax_do_first_load(isyntax_streamer_t* streamer) {
 	}
 
 	console_print("   iSyntax: loading the first %d tiles took %g seconds\n", tiles_loaded, get_seconds_elapsed(start_first_load, get_clock()));
-	console_print("   total RGB transform time: %g seconds\n", total_rgb_transform_time);
+	console_print("   total RGB transform time: %g seconds\n", isyntax->total_rgb_transform_time);
 
 	i32 blocks_freed = 0;
 	for (i32 i = 0; i < levels_in_chunk; ++i) {
@@ -330,7 +330,7 @@ static void isyntax_do_first_load(isyntax_streamer_t* streamer) {
 			}
 		}
 	}
-//	console_print("   blocks allocated and freed: %d\n", blocks_freed);
+	console_print("   blocks allocated and freed: %d\n", blocks_freed);
 
 	release_temp_memory(&temp_memory); // deallocate data chunk
 
@@ -850,9 +850,9 @@ void isyntax_stream_image_tiles(isyntax_streamer_t* streamer, isyntax_t* isyntax
 				// Cap max chunks to load per iteration
 				chunks_to_load_count = MIN(chunks_to_load_count, max_chunks_to_load);
 
-//				if (chunks_to_load_count > 0) {
-//					console_print("Wanting to load %d chunks\n", chunks_to_load_count);
-//				}
+				if (chunks_to_load_count > 0) {
+					console_print("Wanting to load %d chunks\n", chunks_to_load_count);
+				}
 
 				// Sorting read operations by offset to improve read performance
 				qsort(chunks_to_load, chunks_to_load_count, sizeof(chunks_to_load[0]), chunk_index_compare_func);
@@ -869,7 +869,7 @@ void isyntax_stream_image_tiles(isyntax_streamer_t* streamer, isyntax_t* isyntax
 						u64 read_size = offset1 - chunk->offset;
 						size_t safety_bytes = 7; // allocate extra safety bytes at the end for bitstream_lsb_read(), which might read past the end of the buffer
 						chunk->data = (u8*)malloc(read_size + safety_bytes);
-//				        console_print("loading chunk %d\n", chunk_index);
+				        console_print("loading chunk %d\n", chunk_index);
 
 						size_t bytes_read = file_handle_read_at_offset(chunk->data, isyntax->file_handle, chunk->offset, read_size);
 						if (!(bytes_read > 0)) {
@@ -897,11 +897,11 @@ void isyntax_stream_image_tiles(isyntax_streamer_t* streamer, isyntax_t* isyntax
 
 
 
-		//		i64 perf_clock_io = get_clock();
-		//		float perf_time_io = get_seconds_elapsed(perf_clock_check, perf_clock_io);
-		//		if (chunks_loaded > 0) {
-		//			console_print("IO time for %d chunks: %g seconds\n", chunks_loaded, get_seconds_elapsed(clock_io_start, get_clock()));
-		//		}
+				i64 perf_clock_io = get_clock();
+				float perf_time_io = get_seconds_elapsed(clock_io_start, perf_clock_io);
+				if (chunks_loaded > 0) {
+					console_print("IO time for %d chunks: %g seconds\n", chunks_loaded, get_seconds_elapsed(clock_io_start, get_clock()));
+				}
 
 				// Now try to reconstruct the tiles
 				// Decompress tiles
@@ -939,8 +939,8 @@ void isyntax_stream_image_tiles(isyntax_streamer_t* streamer, isyntax_t* isyntax
 
 				}
 
-//		        i64 perf_clock_decompress = get_clock();
-//		        float perf_time_decompress = get_seconds_elapsed(perf_clock_io, perf_clock_decompress);
+		        i64 perf_clock_decompress = get_clock();
+		        float perf_time_decompress = get_seconds_elapsed(perf_clock_io, perf_clock_decompress);
 
 				for (i32 scale = highest_scale_to_load; scale >= lowest_visible_scale; --scale) {
 					isyntax_level_t *level = wsi->levels + scale;
@@ -1055,10 +1055,10 @@ void isyntax_stream_image_tiles(isyntax_streamer_t* streamer, isyntax_t* isyntax
 		}
 
 	}
-//	float elapsed = get_seconds_elapsed(clock_start, get_clock());
-//	if (elapsed > 1e-4f) {
-//		console_print("streaming elapsed: %g; loaded %d tiles\n", elapsed, tiles_loaded);
-//	}
+	float elapsed = get_seconds_elapsed(clock_start, get_clock());
+	if (elapsed > 1e-4f) {
+		console_print("streaming elapsed: %g; loaded %d tiles\n", elapsed, tiles_loaded);
+	}
 }
 
 void isyntax_stream_image_tiles_func(i32 logical_thread_index, void* userdata) {
