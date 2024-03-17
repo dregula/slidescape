@@ -30,6 +30,7 @@
 #include "tiff_write.h"
 #include "image.h"
 #include "image_registration.h"
+#include "slide_score.h"
 
 
 #define GUI_IMPL
@@ -166,9 +167,24 @@ bool gui_draw_selected_annotation_submenu_section(app_state_t* app_state, scene_
 				}
 			}
 		}
-//				if (ImGui::MenuItem("Assign group/feature...", NULL)) {
-//					show_annotation_group_assignment_window = true;
-//				}
+
+        // Assign group
+        if (annotation_set->active_group_count > 1) {
+            if (ImGui::BeginMenu("Set annotation group")) {
+                for (i32 group_index = 0; group_index < annotation_set->active_group_count; ++group_index) {
+                    annotation_group_t* group = annotation_set->stored_groups + group_index;
+
+                    if (ImGui::MenuItem(group->name)) {
+                        set_group_for_selected_annotations(annotation_set, group_index);
+                    }
+                }
+
+                ImGui::Separator();
+                if (ImGui::MenuItem("Assign...", NULL, &show_annotation_group_assignment_window)) {}
+
+                ImGui::EndMenu();
+            }
+        }
 
 		const char* delete_text = annotation_set->selection_count > 1 ? "Delete annotations" : "Delete annotation";
 		if (ImGui::MenuItem(delete_text, "Del")) {
@@ -178,14 +194,13 @@ bool gui_draw_selected_annotation_submenu_section(app_state_t* app_state, scene_
 				show_delete_annotation_prompt = true;
 			}
 		};
-	}
 
-	// Option for setting the selection box around the selected annotation(s)
-	if (annotation_set->selection_count >= 1) {
-		if (ImGui::MenuItem("Set export region")) {
-			set_region_encompassing_selected_annotations(annotation_set, scene);
-		}
-
+        // Option for setting the selection box around the selected annotation(s)
+        if (annotation_set->selection_count >= 1) {
+            if (ImGui::MenuItem("Set export region")) {
+                set_region_encompassing_selected_annotations(annotation_set, scene);
+            }
+        }
 	}
 
 	return proceed;
@@ -293,7 +308,7 @@ static void gui_draw_main_menu_bar(app_state_t* app_state) {
 			gui_draw_insert_annotation_submenu(app_state);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Annotations...", NULL, &show_annotations_window)) {}
-			if (ImGui::MenuItem("Assign group/feature...", NULL, &show_annotation_group_assignment_window)) {}
+			if (ImGui::MenuItem("Assign group/feature...", "G", &show_annotation_group_assignment_window)) {}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Autosave", NULL, &app_state->enable_autosave)) {}
 			if (ImGui::MenuItem("Remember groups/features", NULL, &app_state->remember_annotation_groups_as_template)) {}
@@ -923,19 +938,48 @@ void gui_draw_open_uri_window(app_state_t* app_state) {
     ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_EnterReturnsTrue;
     bool entered = false;
 
+    if (ImGui::IsWindowAppearing() && !ImGui::IsAnyItemActive()) {
+        ImGui::SetKeyboardFocusHere();
+    }
     entered = entered || ImGui::InputTextEx("##URI", "Enter URI here", remote_uri, sizeof(remote_uri), ImVec2(-FLT_MIN, 0), input_flags);
 
     static char token_buf[4096];
+    static bool first_time = true;
+    if (first_time) {
+        mem_t* key_file = platform_read_entire_file("api_key.txt");
+        if (key_file) {
+            if (key_file->len < sizeof(token_buf)) {
+                memcpy(token_buf, key_file->data, key_file->len);
+            }
+            free(key_file);
+        }
+        first_time = false;
+    }
+    static bool save_api_key = true;
+    static bool is_api_key_dirty = false;
     if (ImGui::TreeNodeEx("API token", ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog)) {
-        entered = entered || ImGui::InputTextEx("##API_token", "Enter API token here", token_buf, sizeof(token_buf), ImVec2(-FLT_MIN, 0), input_flags);
+        if (ImGui::Checkbox("Save API key", &save_api_key)) {}
+        ImGuiInputTextFlags api_key_input_flags = 0;
+        if (ImGui::InputTextEx("##API_token", "Enter API token here", token_buf, sizeof(token_buf), ImVec2(-FLT_MIN, 0), api_key_input_flags)) {
+            is_api_key_dirty = true;
+        }
 
     }
 
     static bool pressed_connect;
     if (entered || ImGui::Button("Connect")) {
         pressed_connect = true;
+        if (save_api_key && is_api_key_dirty) {
+            file_stream_t fp = file_stream_open_for_writing("api_key.txt");
+            if (fp) {
+                file_stream_write(token_buf, strlen(token_buf), fp);
+                file_stream_close(fp);
+            }
+            is_api_key_dirty = false;
+        }
         http_response_t* response = open_remote_uri(app_state, remote_uri, token_buf);
         if (response) {
+            debug_slide_score_api_handle_response((const char *) (response->buffer.data), response->buffer.used_size);
             http_response_destroy(response);
         }
     }
